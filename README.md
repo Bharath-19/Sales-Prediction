@@ -1,136 +1,109 @@
 # 🛒 Rossmann Store Sales Forecasting
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## 📌 Project Overview
+Rossmann operates over **3,000 drug stores** in **7 European countries**. In this Kaggle competition, the task is to forecast daily sales for 6 weeks across 1,115 Rossmann stores in Germany. Accurate forecasts help store managers improve planning and resource allocation.
 
-This project focuses on forecasting daily sales for Rossmann drug stores using historical transaction data, store-specific information, and promotional activity. It is designed to improve demand forecasting and help managers make better scheduling decisions. The workflow includes steps from data loading to final prediction submission.
-
----
-
-## 📁 Dataset Explanation
-
-### 1. `train.csv`
-
-* Historical daily sales data from 2013 to 2015.
-* Includes store ID, number of customers, whether the store was open, ongoing promotions, state and school holidays.
-
-### 2. `test.csv`
-
-* Same structure as `train.csv`, but without the `Sales` column.
-* Used for final prediction and submission.
-
-### 3. `store.csv`
-
-* Contains additional store-level info such as:
-
-  * `StoreType`, `Assortment`, `CompetitionDistance`
-  * Whether the store is running `Promo2` and when it started.
-
-### 4. `sample_submission.csv`
-
-* Template to structure the predictions for Kaggle submission.
+This project implements a complete machine learning pipeline to tackle this business problem, including:
+- Data Cleaning
+- Exploratory Data Analysis
+- Feature Engineering
+- Model Training
+- Ensemble Learning
+- Final Submission to Kaggle
 
 ---
 
-## 📊 Project Steps Explained
+## 📁 Dataset Description
 
-### 🔹 1. Load and Merge Data
+### `train.csv`
+- Historical sales data from 2013–2015.
+- Includes Store ID, Sales, Customers, Open/Closed status, and Promotion info.
 
-* All datasets are loaded using `pandas` and merged with store info using the `Store` key to enrich the training and test datasets.
+### `test.csv`
+- Same structure as `train.csv` **without Sales**.
+- Used for making final predictions.
+
+### `store.csv`
+- Store metadata: StoreType, Assortment level, Competition distance, Promo2 status, etc.
+
+### `sample_submission.csv`
+- Format template to structure predictions for Kaggle evaluation.
+
+---
+
+## 📊 Workflow Summary
+
+### 🔹 1. Load & Merge Data
+- Merged `train.csv` and `test.csv` with `store.csv` on the `Store` column.
 
 ### 🔹 2. Handle Missing Values
+- Filled missing numerical values with median (e.g. `CompetitionDistance`).
+- Filled `PromoInterval` with the most frequent value.
 
-* Median imputation is used for numerical columns with missing values.
-* Categorical values (e.g. `PromoInterval`) are filled with a default category.
+### 🔹 3. Feature Engineering
+- Extracted `Day`, `Month`, `Year` from the `Date` column.
+- Filtered training data to include only rows where stores were open (`Open == 1`).
 
-### 🔹 3. Feature Engineering with Dates
+### 🔹 4. EDA (Exploratory Data Analysis)
+- Visualized sales distributions.
+- Examined relationships between `Sales` and `Promo`, `DayOfWeek`, `Month`, `Year`.
+- Generated a correlation heatmap to identify feature relationships.
 
-The `Date` column is converted to datetime format, and new features such as `Day`, `Month`, and `Year` are extracted to help models learn seasonality.
+### 🔹 5. Data Preprocessing
+- Applied **MinMaxScaler** to normalize numeric features.
+- Applied **OneHotEncoder** to convert categorical columns into numeric format.
 
-### 🔹 4. Filter for Open Stores
+### 🔹 6. Modeling
+Trained a variety of models:
+- **Linear Models**: Linear Regression, Ridge, Lasso, ElasticNet
+- **Tree-Based Models**: Decision Tree, Random Forest
 
-Closed stores (`Open == 0`) are excluded from training data since their sales would be zero and uninformative.
+### 🔹 7. Ensemble Learning
+- Combined **Ridge**, **Decision Tree**, and **Random Forest** predictions using weighted averaging.
+- Weights: `0.6 * RandomForest + 0.3 * DecisionTree + 0.1 * Ridge`
 
-### 🔹 5. Exploratory Data Analysis (EDA)
-
-* Histogram of `Sales` to understand distribution.
-* Bar plots for categorical features like `Promo`, `DayOfWeek`, etc.
-* Correlation heatmap of numerical features to examine multicollinearity.
-
-### 🔹 6. Data Preprocessing
-
-* **Numerical Features**: Scaled using `MinMaxScaler` after imputation.
-* **Categorical Features**: Encoded with `OneHotEncoder` to convert them into numerical format.
-
-### 🔹 7. Modeling
-
-A variety of models are trained to evaluate baseline and advanced performance:
-
-* **Linear Models**: LinearRegression, Ridge, Lasso, ElasticNet
-* **Tree Models**: DecisionTreeRegressor, RandomForestRegressor
-
-### 🔹 8. Ensemble Learning
-
-Predictions from Ridge, Decision Tree, and Random Forest are combined via weighted averaging. The weights are optimized using `scipy.optimize.minimize` to minimize validation RMSE.
-
-### 🔹 9. Evaluation Metrics
-
-* **RMSE (Root Mean Squared Error)** measures absolute prediction error.
-* **RMSPE (Root Mean Square Percentage Error)** considers percentage-based error (more relevant for sales).
+### 🔹 8. Evaluation Metrics
+- **RMSE**: Root Mean Squared Error
+- **RMSPE**: Root Mean Square Percentage Error (used by Kaggle)
 
 | Model        | RMSE    | RMSPE  |
-| ------------ | ------- | ------ |
+|--------------|---------|--------|
 | RandomForest | 1154.43 | 18.74% |
 | DecisionTree | 1469.77 | 21.88% |
 | Ridge        | 2718.66 | 48.44% |
-| Ensemble     | 1201.49 | 19.34% |
+| Ensemble     | 1306.09 | 18.76% |
 
-### 🔹 10. Feature Importance
+### 🔹 9. Feature Importance
+Visualized top 10 features contributing to each model's prediction using bar charts.
 
-Top 10 features from each model are visualized using horizontal bar charts to understand which features most influenced the predictions.
-
-### 🔹 11. Final Submission
-
-Predictions are made on the test set using the trained ensemble model. The results are multiplied by the `Open` flag and saved in `submission.csv`.
-
----
-
-## 📦 Project Directory Structure
-
+### 🔹 10. Final Submission
+- Predictions were made on the test set.
+- Final results were stored in `submission.csv` as per Kaggle format:
 ```
-Rossmann-Sales-Forecasting/
-├── data
-│   ├── train.csv
-│   ├── test.csv
-│   ├── store.csv
-│   └── sample_submission.csv
-│
-├── notebooks
-│   └── Rossmann Sales Forecasting.ipynb
-│
-├── outputs
-│   └── submission.csv
-```
-
----
-
-## 🛠️ Setup & Installation
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 📤 Submission Format
-
-Ensure your output file `submission.csv` follows this structure:
-
-```
+csv
 Id,Sales
 1,5263.0
 2,6064.0
 ...
 ```
 
----
+## 🗂️ Project Structure
+```
+Rossmann-Sales-Forecasting/
+├── data/
+│   ├── train.csv
+│   ├── test.csv
+│   ├── store.csv
+│   └── sample_submission.csv
+│
+├── notebooks/
+│   └── Rossmann_Sales_Forecasting.ipynb
+│
+├── outputs/
+│   └── submission.csv
+│
+├── README.md
+└── .gitignore
+```
 
