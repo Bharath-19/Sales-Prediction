@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# PyCharm settings
+.idea/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Mac OS files
+.DS_Store
+
+# Data & model outputs
+submission.csv
+*.pkl
+*.h5
+*.joblib
+*.npy
+
+# Logs and cache
+*.log
+*.csv
+*.json
+*.db
+*.sqlite3
+
+# Kaggle API credentials (if used)
+kaggle.json
+
+# Misc
+*.zip
+*.tar.gz
+
+# Ignore README template backup or temp
+README_backup.md
